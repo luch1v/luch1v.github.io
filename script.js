@@ -8,6 +8,8 @@
   var tabs = document.createElement('div');
   var selected = 0;
   var buttons = [];
+  var layoutWidth = document.documentElement.clientWidth;
+  var layoutHeight = window.innerHeight;
   tabs.className = 'wallet-tabs';
   tabs.setAttribute('role', 'tablist');
   tabs.setAttribute('aria-label', 'Cryptocurrency');
@@ -39,12 +41,11 @@
 
   function selectTab(index, focus) {
     chooseWallet(index, focus);
-    fitPicker(window.visualViewport ? window.visualViewport.height : window.innerHeight,
-              document.documentElement.clientWidth);
+    fitPicker(layoutHeight, layoutWidth);
   }
 
   function fitLayout() {
-    var height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    var height = layoutHeight;
     var width = document.documentElement.clientWidth;
     page.classList.remove('wallet-picker');
     tabs.hidden = true;
@@ -54,7 +55,7 @@
       cards[i].removeAttribute('role');
       cards[i].setAttribute('aria-labelledby', cards[i].querySelector('h2').id);
     }
-    // Try smaller readable QRs before replacing the desktop grid with tabs.
+    
     if (width > 880) {
       var excess = page.getBoundingClientRect().height - height + 8;
       var gridSize = parseFloat(page.style.getPropertyValue('--qr-size'));
@@ -128,7 +129,7 @@
         copied(field);
       }
     } catch (error) {
-      // The address stays selected for manual copying.
+      
     }
   }
 
@@ -158,8 +159,13 @@
   }
 
   fitLayout();
-  window.addEventListener('resize', fitLayout);
-  if (window.visualViewport) { window.visualViewport.addEventListener('resize', fitLayout); }
+  window.addEventListener('resize', function () {
+    var width = document.documentElement.clientWidth;
+    if (width <= 880 && width === layoutWidth) { return; }
+    layoutWidth = width;
+    layoutHeight = window.innerHeight;
+    fitLayout();
+  });
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(fitLayout);
   }
